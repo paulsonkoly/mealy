@@ -29,7 +29,14 @@
 #
 # @note states can be represented with any type not just Symbols
 module Mealy
-  UnexpectedTokenError = Class.new(StandardError)
+  # Error indicating that there is no transition from the current state with
+  # the token read.
+  class UnexpectedTokenError < StandardError
+    def initialize(state, on)
+      super("FSM error #{self.class} in state #{state.inspect} reading #{on}")
+    end
+  end
+  # Error indicating that the user code calls {emit} twice.
   AlreadyEmitted = Class.new(StandardError)
 
   # The class level DSL for defining machines.
@@ -118,10 +125,10 @@ module Mealy
       new, params = transitions[@state].find do |k, _|
         k == Any || k === char
       end
+
       previous = @state
       @state = params[:to]
       block = params[:block]
-      raise UnexpectedCharError if new.nil?
 
       user_action(block, char, previous, @state) { |token| yield(token) }
     end
