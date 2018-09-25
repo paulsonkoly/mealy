@@ -38,9 +38,9 @@ module Mealy
     Any = :any
 
     module ClassMethods
-      # Declares the initial state of the lexer FSM.
+      # Declares the initial state of the FSM.
       # @param sym [Symbol] the initial state
-      # @param block user code executed in the instance of the lexer on
+      # @param block user code executed in the instance of the FSM instance on
       #              start up
       def initial_state(sym, &block)
         @init = [sym, block]
@@ -91,7 +91,8 @@ module Mealy
     end
 
     # yields each emitted token in turn
-    # @param enum the input for the lexer
+    # @param enum [Enumerable] the input for the FSM
+    # @return Enumerator if no block is given
     def run_mealy(enum)
       return to_enum(:run_mealy, enum) unless block_given?
 
