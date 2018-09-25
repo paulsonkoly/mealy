@@ -127,6 +127,8 @@ module Mealy
       end
 
       previous = @state
+      raise UnexpectedTokenError.new(previous, char) if new.nil?
+
       @state = params[:to]
       block = params[:block]
 
