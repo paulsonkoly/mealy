@@ -36,8 +36,9 @@ module Mealy
       super("FSM error #{self.class} in state #{state.inspect} reading #{on}")
     end
   end
-  # Error indicating that the user code calls {emit} twice.
-  AlreadyEmitted = Class.new(StandardError)
+
+  # Error indicating that the user code calls {DSL#emit} twice.
+  class AlreadyEmmited < StandardError; end
 
   # The class level DSL for defining machines.
   module DSL
