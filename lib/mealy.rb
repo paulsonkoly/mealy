@@ -42,7 +42,7 @@ module Mealy
   # The class level DSL for defining machines.
   module DSL
     # Wildcard for machine input tokens that match anything.
-    Any = :any
+    ANY = :any
 
     module ClassMethods
       # Declares the initial state of the FSM.
@@ -57,11 +57,11 @@ module Mealy
       # @param from [Array|Symbol] the state or Array of states we transition
       #             away from
       # @param to [Symbol] the state we transition to
-      # @param on [token|Any] only allows this rule to trigger if the read
+      # @param on [token|ANY] only allows this rule to trigger if the read
       #           token matches
       # @param block user code executed when the rule fires. The read input,
       #              and the from and to states are passed to the block
-      def transition(from:, to:, on: Any, &block)
+      def transition(from:, to:, on: ANY, &block)
         hash = { on => { to: to, block: block } }
         [* from].each do |origin|
           @transitions[origin] = @transitions[origin].merge(hash)
@@ -70,9 +70,9 @@ module Mealy
 
       # An FSM loop
       # @param state [Array|Symbol] the state or states we loop on
-      # @param on [token|Any] loop while this matches the read token
+      # @param on [token|ANY] loop while this matches the read token
       # @param block user code executed on each iteration of the loop
-      def read(state:, on: Any, &block)
+      def read(state:, on: ANY, &block)
         [* state].each do |one_state|
           transition(from: one_state, to: one_state, on: on, &block)
         end
@@ -123,7 +123,7 @@ module Mealy
 
     def tokenize_token(char)
       new, params = transitions[@state].find do |k, _|
-        k == Any || k === char
+        k == ANY || k === char
       end
 
       previous = @state
