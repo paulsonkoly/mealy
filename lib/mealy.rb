@@ -3,6 +3,11 @@
 # emitted from the user code, each emit is yielded to the block of
 # {DSL#run_mealy}.
 #
+# Matching rules are chosen in the order of appearance, first match wins.
+# {DSL::ANY} represents a wildcard, so naturally rules with this token come
+# last otherwise more specific rules can't match. The default token argument is
+# {DSL::ANY} so it can be omitted.
+#
 # == Example
 #
 # read ones until a zero. Then emit how many ones we read.
