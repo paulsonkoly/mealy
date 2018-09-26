@@ -137,8 +137,9 @@ module Mealy
 
     # emit tokens from the DSL blocks
     def emit(token)
-      raise AlreadyEmitted unless @emit.nil?
+      raise AlreadyEmitted if @has_emit
 
+      @has_emit = true
       @emit = token
     end
 
@@ -185,11 +186,11 @@ module Mealy
     end
 
     def user_action(block, *args)
-      @emit = nil
+      @has_emit = false
       return if block.nil?
 
       instance_exec(*args, &block)
-      yield(@emit) unless @emit.nil?
+      yield(@emit) if @has_emit
     end
   end
 end
