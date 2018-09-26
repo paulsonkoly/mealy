@@ -157,7 +157,7 @@ module Mealy
 
     %i[init transitions finish].each do |sym|
       define_method(sym) do
-        self.class.instance_variable_get(:"@#{sym}") # !> instance variable @finish not initialized
+        self.class.instance_variable_get(:"@#{sym}")
       end
     end
 
