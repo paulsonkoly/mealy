@@ -19,8 +19,9 @@ module Mealy
       # @param from [Array|Symbol] the state or Array of states we transition
       #             away from
       # @param to [Symbol] the state we transition to
-      # @param on [token|ANY] only allows this rule to trigger if the read
-      #           token matches
+      # @param on [Label] only allows this rule to trigger if the read
+      #           token matches ({HelperMethods.Label} is automatically called
+      #           on this)
       # @param block user code executed when the rule fires. The read input,
       #              and the from and to states are passed to the block
       def transition(from:, to:, on: ANY, &block)
@@ -32,7 +33,9 @@ module Mealy
 
       # An FSM loop
       # @param state [Array|Symbol] the state or states we loop on
-      # @param on [token|ANY] loop while this matches the read token
+      # @param on [Label] only allows this rule to trigger if the read
+      #           token matches ({HelperMethods.Label} is automatically called
+      #           on this)
       # @param block user code executed on each iteration of the loop
       def read(state:, on: ANY, &block)
         [* state].each do |one_state|
