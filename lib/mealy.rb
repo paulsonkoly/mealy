@@ -168,21 +168,30 @@ module Mealy
     end
 
     def tokenize_token(char)
-      new, params = transitions[@state].find do |k, _|
-        k == ANY || k === char
-      end
-
-      previous = @state
-      raise UnexpectedTokenError.new(previous, char) if new.nil?
-
-      @state = params[:to]
+      params = lookup_transition_for(char)
       block = params[:block]
-
-      user_action(block, char, previous, @state) { |token| yield(token) }
+      move_state(params[:to]) do |from, to|
+        user_action(block, char, from, to) do |token|
+          yield(token)
+        end
+      end
     end
 
     def finish_tokenization
       user_action(finish) { |token| yield(token) }
+    end
+
+    def lookup_transition_for(char)
+      on_not_found = -> { raise UnexpectedTokenError.new(state, char) }
+      _, params = transitions[@state].find(on_not_found) do |key, _|
+        key == ANY || key === char
+      end
+      params
+    end
+
+    def move_state(to)
+      yield(@state, to)
+      @state = to
     end
 
     def user_action(block, *args)
