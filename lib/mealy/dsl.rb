@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
+require_relative 'label'
+require_relative 'helper_methods'
+
 module Mealy
   # The class level DSL for defining machines.
   module DSL
-    # Wildcard for machine input tokens that match anything.
-    ANY = :any
-
     module ClassMethods
       # Declares the initial state of the FSM.
       # @param sym [Symbol] the initial state
@@ -22,7 +24,7 @@ module Mealy
       # @param block user code executed when the rule fires. The read input,
       #              and the from and to states are passed to the block
       def transition(from:, to:, on: ANY, &block)
-        hash = { on => { to: to, block: block } }
+        hash = { HelperMethods.Label(on) => { to: to, block: block } }
         [* from].each do |origin|
           @transitions[origin] = @transitions[origin].merge(hash)
         end
@@ -45,6 +47,7 @@ module Mealy
       end
     end
 
+    # Module.included hook. Resets the state transitions for a class
     def self.included(klass)
       klass.class_eval { @transitions = Hash.new { Hash.new({}) } }
       klass.extend(ClassMethods)
@@ -99,7 +102,7 @@ module Mealy
     def lookup_transition_for(char)
       on_not_found = -> { raise UnexpectedTokenError.new(state, char) }
       _, params = transitions[@state].find(on_not_found) do |key, _|
-        key == ANY || key === char
+        key.match?(char)
       end
       params
     end

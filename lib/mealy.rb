@@ -1,4 +1,5 @@
 require_relative 'mealy/dsl'
+require_relative 'mealy/label'
 
 # A Mealy finite state machine. Define transition rules for your class, and
 # include Mealy::DSL to make it a functioning state machine. The output can be
@@ -6,9 +7,9 @@ require_relative 'mealy/dsl'
 # {DSL#run_mealy}.
 #
 # Matching rules are chosen in the order of appearance, first match wins.
-# {DSL::ANY} represents a wildcard, so naturally rules with this token come
+# {ANY} represents a wildcard, so naturally rules with this token come
 # last otherwise more specific rules can't match. The default token argument is
-# {DSL::ANY} so it can be omitted.
+# {ANY} so it can be omitted.
 #
 # == Example
 #
