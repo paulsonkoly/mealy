@@ -11,7 +11,7 @@ transformers etc.
 ED
   s.authors     = ['Paul Sonkoly']
   s.email       = 'sonkoly.pal@gmail.com'
-  s.files       = ["lib/mealy.rb"]
+  s.files       = Dir['lib/**/*.rb']
   s.homepage    = 'http://github.com/phaul/mealy'
   s.license     = 'MIT'
 
