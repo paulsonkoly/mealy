@@ -1,5 +1,7 @@
 A Mealy finite state machine.
 
+[![Build Status](https://travis-ci.com/phaul/mealy.svg?branch=master)](https://travis-ci.com/phaul/mealy)
+
 Define transition rules for your class, and include Mealy::DSL to make it a
 functioning state machine. The output can be emitted from the user code, each
 emit is yielded to the block of `DSL#run_mealy`.
