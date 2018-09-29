@@ -14,4 +14,7 @@ ED
   s.files       = ["lib/mealy.rb"]
   s.homepage    = 'http://github.com/phaul/mealy'
   s.license     = 'MIT'
+
+  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'simplecov'
 end
