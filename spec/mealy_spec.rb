@@ -17,14 +17,14 @@ class Example
   attr_reader :state
 end
 
-RSpec.describe Mealy::DSL do
+RSpec.describe Mealy do
   let(:fsm_instance) { Example.new }
 
   describe '.run_mealy' do
     context 'with .initial_state :start' do
       it 'transitions to :start' do
         Example.class_eval do
-          include Mealy::DSL
+          include Mealy
 
           initial_state :start
         end
@@ -38,7 +38,7 @@ RSpec.describe Mealy::DSL do
     context 'with .initial_state user block' do
       it 'fires user block once' do
         Example.class_eval do
-          include Mealy::DSL
+          include Mealy
 
           initial_state(:start) { @receiver.call! }
         end
@@ -53,7 +53,7 @@ RSpec.describe Mealy::DSL do
       context 'with matching input' do
         it 'changes the state' do
           Example.class_eval do
-            include Mealy::DSL
+            include Mealy
 
             initial_state :start
             transition from: :start, to: :end, on: 1
@@ -67,7 +67,7 @@ RSpec.describe Mealy::DSL do
         context 'with user block' do
           it 'fires user block' do
             Example.class_eval do
-              include Mealy::DSL
+              include Mealy
 
               initial_state(:start)
               transition(from: :start, to: :end, on: 1) { @receiver.call! }
@@ -83,7 +83,7 @@ RSpec.describe Mealy::DSL do
       context 'with non matching input' do
         it 'raises Mealy::UnexpectedTokenError' do
           Example.class_eval do
-            include Mealy::DSL
+            include Mealy
 
             initial_state :start
             transition from: :start, to: :end, on: 1
@@ -100,7 +100,7 @@ RSpec.describe Mealy::DSL do
       context 'with ANY label' do
         it 'changes the state' do
           Example.class_eval do
-            include Mealy::DSL
+            include Mealy
 
             initial_state :start
             transition from: :start, to: :mid
@@ -116,7 +116,7 @@ RSpec.describe Mealy::DSL do
       context 'with matching input' do
         it 'changes the state' do
           Example.class_eval do
-            include Mealy::DSL
+            include Mealy
 
             initial_state :start
             transition from: :start, to: :mid, on: 1
@@ -131,7 +131,7 @@ RSpec.describe Mealy::DSL do
         context 'with user block' do
           it 'fires user block' do
             Example.class_eval do
-              include Mealy::DSL
+              include Mealy
 
               initial_state(:start)
               transition from: :start, to: :mid, on: 1
@@ -145,7 +145,7 @@ RSpec.describe Mealy::DSL do
 
           it 'runs user blocks in instance context' do
             Example.class_eval do
-              include Mealy::DSL
+              include Mealy
 
               initial_state(:start) { @something = :defined }
             end
@@ -157,7 +157,7 @@ RSpec.describe Mealy::DSL do
 
           it 'passes the token, the to and from states to user block' do
             Example.class_eval do
-              include Mealy::DSL
+              include Mealy
 
               initial_state(:start)
 
@@ -182,7 +182,7 @@ RSpec.describe Mealy::DSL do
       context 'with non matching input' do
         it 'raises Mealy::UnexpectedTokenError' do
           Example.class_eval do
-            include Mealy::DSL
+            include Mealy
 
             initial_state :start
             transition from: :start, to: :mid, on: 1
@@ -199,7 +199,7 @@ RSpec.describe Mealy::DSL do
     context 'when input ends prematurely' do
       it 'leaves the machine in intermediate state' do
         Example.class_eval do
-          include Mealy::DSL
+          include Mealy
 
           initial_state :start
           transition from: :start, to: :mid, on: 1
@@ -216,7 +216,7 @@ RSpec.describe Mealy::DSL do
     context 'when in a state loop' do
       it 'fires the user action on each loop' do
         Example.class_eval do
-          include Mealy::DSL
+          include Mealy
 
           initial_state :start
           read(state: :start, on: 1) { @receiver.call! }
@@ -232,7 +232,7 @@ RSpec.describe Mealy::DSL do
       context 'if finish is set with user block' do
         it 'calls the user block' do
           Example.class_eval do
-            include Mealy::DSL
+            include Mealy
 
             finish { @receiver.call! }
           end

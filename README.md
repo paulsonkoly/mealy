@@ -2,7 +2,7 @@ A Mealy finite state machine.
 
 [![Build Status](https://travis-ci.com/phaul/mealy.svg?branch=master)](https://travis-ci.com/phaul/mealy)
 
-Define transition rules for your class, and include {Mealy::DSL} to make it a functioning state machine. The output can be emitted from the user code, each emit is yielded to the block of {Mealy::DSL#run_mealy}.
+Define transition rules for your class, and include {Mealy} to make it a functioning state machine. The output can be emitted from the user code, each emit is yielded to the block of {Mealy#run_mealy}.
 
 Matching rules are chosen in the order of appearance, first match wins. {Mealy::ANY} represents a wildcard, so naturally rules with this token come last otherwise more specific rules can't match. The default token argument is
 {Mealy::ANY} so it can be omitted.
@@ -15,7 +15,7 @@ read ones until a zero. Then emit how many ones we read.
 
 ```ruby
 class Counter
-  include Mealy::DSL
+  include Mealy
 
   initial_state(:start) { @counter = 0 }
 
@@ -38,7 +38,7 @@ counter.run_mealy([1,1,1,1,0,1,0,0]).first # => 4
 
 ```ruby
 class FloatParser
-  include Mealy::DSL
+  include Mealy
 
   initial_state(:first)
 
