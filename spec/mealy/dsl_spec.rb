@@ -97,6 +97,22 @@ RSpec.describe Mealy::DSL do
     end
 
     context 'when in normal state transitions' do
+      context 'with ANY label' do
+        it 'changes the state' do
+          Example.class_eval do
+            include Mealy::DSL
+
+            initial_state :start
+            transition from: :start, to: :mid
+            transition from: :mid, to: :end
+          end
+
+          expect do
+            fsm_instance.run_mealy([1, 2]) {}
+          end.to change(fsm_instance, :state).to(:end)
+        end
+      end
+
       context 'with matching input' do
         it 'changes the state' do
           Example.class_eval do
