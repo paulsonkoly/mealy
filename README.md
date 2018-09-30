@@ -36,10 +36,6 @@ counter.run_mealy([1,1,1,1,0,1,0,0]).first # => 4
 
 ### Float parser
 
-This example could be simplified with regexps, but we demonstrate how to
-parse floats with single character based rules. One could also use regexps to
-match tokens in their FSM rules.
-
 ![float FSM](http://github.com/phaul/mealy/raw/master/doc/float.svg?sanitize=true)
 
 ```ruby
