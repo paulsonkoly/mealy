@@ -58,7 +58,7 @@ module Mealy
 
     # emit tokens from the DSL blocks
     def emit(token)
-      raise AlreadyEmitted if @has_emit
+      raise AlreadyEmittedError if @has_emit
 
       @has_emit = true
       @emit = token

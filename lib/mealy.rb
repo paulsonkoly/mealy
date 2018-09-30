@@ -14,5 +14,5 @@ module Mealy
   end
 
   # Error indicating that the user code calls {DSL#emit} twice.
-  class AlreadyEmmited < StandardError; end
+  class AlreadyEmmitedError < StandardError; end
 end
