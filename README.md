@@ -6,8 +6,10 @@ Define transition rules for your class, and include Mealy::DSL to make it a
 functioning state machine. The output can be emitted from the user code, each
 emit is yielded to the block of `DSL#run_mealy`.
 
-Example
-=======
+Examples
+========
+
+### Simple example
 
 read ones until a zero. Then emit how many ones we read.
 
@@ -46,13 +48,13 @@ class FloatParser
 
   initial_state(:first)
 
-  10.times { |ix| transition(from: :first, to: :before_dot, on: ix.to_s ) }
+  transition(from: :first, to: :before_dot, on: '0'..'9')
 
-  10.times { |ix| read(state: :before_dot, on: ix.to_s) }
+  read(state: :before_dot, on: '0'..'9')
 
   transition(from: :before_dot, to: :after_dot, on: ?.)
 
-  10.times { |ix| read(state: :after_dot, on: ix.to_s) }
+  read(state: :after_dot, on: '0'..'9')
 
   transition(from: [ :first, :before_dot, :after_dot ], to: :error) do |c, from|
     @error = "unexpected char #{c} @ #{from.inspect}"

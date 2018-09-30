@@ -37,23 +37,18 @@ require_relative 'mealy/label'
 #
 # == Float parser
 #
-# This example could be simplified with regexps, but we demonstrate how to
-# parse floats with single character based rules. One could also use regexps to
-# match tokens in their FSM rules.
-#
-#
 #     class FloatParser
 #       include Mealy::DSL
 #
 #       initial_state(:first)
 #
-#       10.times { |ix| transition(from: :first, to: :before_dot, on: ix.to_s ) }
+#       transition(from: :first, to: :before_dot, on: '0'..'9')
 #
-#       10.times { |ix| read(state: :before_dot, on: ix.to_s) }
+#       read(state: :before_dot, on: '0'..'9')
 #
 #       transition(from: :before_dot, to: :after_dot, on: ?.)
 #
-#       10.times { |ix| read(state: :after_dot, on: ix.to_s) }
+#       read(state: :after_dot, on: '0'..'9')
 #
 #       transition(from: [ :first, :before_dot, :after_dot ], to: :error) do |c, from|
 #         @error = "unexpected char #{c} @ #{from.inspect}"
