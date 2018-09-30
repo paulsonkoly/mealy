@@ -13,55 +13,59 @@ Matching rules are chosen in the order of appearance, first match wins. {Mealy::
 
 read ones until a zero. Then emit how many ones we read.
 
-    class Counter
-      include Mealy::DSL
+```ruby
+class Counter
+  include Mealy::DSL
 
-      initial_state(:start) { @counter = 0 }
+  initial_state(:start) { @counter = 0 }
 
-      transition(from: :start, to: :end, on: 0)
+  transition(from: :start, to: :end, on: 0)
 
-      read(state: :start, on: 1) { @counter += 1 }
+  read(state: :start, on: 1) { @counter += 1 }
 
-      # once we are in this state we are stuck, but we still need to read the
-      # rest of the input
-      read(state: :end)
+  # once we are in this state we are stuck, but we still need to read the
+  # rest of the input
+  read(state: :end)
 
-      finish { emit(@counter) }
-    end
+  finish { emit(@counter) }
+end
 
-    counter = Counter.new
-    counter.run_mealy([1,1,1,1,0,1,0,0]).first # => 4
+counter = Counter.new
+counter.run_mealy([1,1,1,1,0,1,0,0]).first # => 4
+```
 
 ### Float parser
 
-    class FloatParser
-      include Mealy::DSL
+```ruby
+class FloatParser
+  include Mealy::DSL
 
-      initial_state(:first)
+  initial_state(:first)
 
-      transition(from: :first, to: :before_dot, on: '0'..'9')
+  transition(from: :first, to: :before_dot, on: '0'..'9')
 
-      read(state: :before_dot, on: '0'..'9')
+  read(state: :before_dot, on: '0'..'9')
 
-      transition(from: :before_dot, to: :after_dot, on: ?.)
+  transition(from: :before_dot, to: :after_dot, on: ?.)
 
-      read(state: :after_dot, on: '0'..'9')
+  read(state: :after_dot, on: '0'..'9')
 
-      transition(from: [ :first, :before_dot, :after_dot ], to: :error) do |c, from|
-        @error = "unexpected char #{c} @ #{from.inspect}"
-      end
+  transition(from: [ :first, :before_dot, :after_dot ], to: :error) do |c, from|
+    @error = "unexpected char #{c} @ #{from.inspect}"
+  end
 
-      read(state: :error)
+  read(state: :error)
 
-      attr_reader :error
-    end
+  attr_reader :error
+end
 
-    p = FloatParser.new
-    p.run_mealy('1'.chars) {}
-    p.error # => nil
-    p.run_mealy('1.0'.chars) {}
-    p.error # => nil
-    p.run_mealy('.0'.chars) {}
-    p.error # => "unexpected char . @ :first"
-    p.run_mealy('1.2.0'.chars) {}
-    p.error # => "unexpected char . @ :after_dot"
+p = FloatParser.new
+p.run_mealy('1'.chars) {}
+p.error # => nil
+p.run_mealy('1.0'.chars) {}
+p.error # => nil
+p.run_mealy('.0'.chars) {}
+p.error # => "unexpected char . @ :first"
+p.run_mealy('1.2.0'.chars) {}
+p.error # => "unexpected char . @ :after_dot"
+```
