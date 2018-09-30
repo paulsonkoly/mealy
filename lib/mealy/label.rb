@@ -21,7 +21,7 @@ module Mealy
   class AnyLabel < Label
     include Singleton
 
-    # initializes a {Label} that matches anything
+    # made private as this is Singleton
     def initialize
     end
 
