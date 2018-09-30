@@ -118,8 +118,6 @@ RSpec.describe Mealy::DSL do
               include Mealy::DSL
 
               initial_state(:start)
-
-              initial_state :start
               transition from: :start, to: :mid, on: 1
               transition(from: :mid, to: :end, on: 2) { @receiver.call! }
             end
@@ -129,9 +127,39 @@ RSpec.describe Mealy::DSL do
             expect(fsm_instance.receiver).to have_received(:call!)
           end
 
-          it 'runs user block in instance context'
+          it 'runs user blocks in instance context' do
+            Example.class_eval do
+              include Mealy::DSL
 
-          it 'passes stuff to user block'
+              initial_state(:start) { @something = :defined }
+            end
+
+            fsm_instance.run_mealy([]) {}
+            something = fsm_instance.instance_variable_get(:@something)
+            expect(something).to be :defined
+          end
+
+          it 'passes the token, the to and from states to user block' do
+            Example.class_eval do
+              include Mealy::DSL
+
+              initial_state(:start)
+
+              transition from: :start, to: :end, on: 1 do |token, from, to|
+                @token = token
+                @from = from
+                @to = to
+              end
+
+              attr_reader :token, :to, :from
+            end
+
+            fsm_instance.run_mealy([1]) {}
+
+            expect(fsm_instance.token).to eql(1)
+            expect(fsm_instance.from).to eql(:start)
+            expect(fsm_instance.to).to eql(:end)
+          end
         end
       end
 
