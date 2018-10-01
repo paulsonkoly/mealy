@@ -13,15 +13,9 @@ module Mealy
     end
   end
 
-  # Error indicating that the user code calls {DSL#emit} twice.
-  class AlreadyEmmitedError < StandardError; end
-
   # emit tokens from the DSL blocks
   def emit(token)
-    raise AlreadyEmittedError if @has_emit
-
-    @has_emit = true
-    @emit = token
+    @emits << token
   end
 
   # yields each emitted token in turn
@@ -76,10 +70,10 @@ module Mealy
   end
 
   def user_action(block, *args)
-    @has_emit = false
+    @emits = []
     return if block.nil?
 
     instance_exec(*args, &block)
-    yield(@emit) if @has_emit
+    @emits.each { |emit| yield(emit) }
   end
 end
