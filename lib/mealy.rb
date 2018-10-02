@@ -31,12 +31,6 @@ module Mealy
 
   private
 
-  %i[init transitions finish].each do |sym|
-    define_method(sym) do
-      self.class.instance_variable_get(:"@#{sym}")
-    end
-  end
-
   def begin_tokenization
     @state, block = init
     user_action block
