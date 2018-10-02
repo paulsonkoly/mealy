@@ -14,26 +14,12 @@ class Example
   end
 
   attr_reader :receiver
-  attr_reader :state
 end
 
 RSpec.describe Mealy do
   let(:fsm_instance) { Example.new }
 
   describe '.run_mealy' do
-    context 'with .initial_state :start' do
-      it 'transitions to :start' do
-        Example.class_eval do
-          include Mealy
-
-          initial_state :start
-        end
-
-        expect { fsm_instance.run_mealy([]) {} }.to change(fsm_instance, :state)
-          .from(nil)
-          .to(:start)
-      end
-    end
 
     context 'with .initial_state user block' do
       it 'fires user block once' do
@@ -51,19 +37,6 @@ RSpec.describe Mealy do
 
     context 'when transitioning away from initial state' do
       context 'with matching input' do
-        it 'changes the state' do
-          Example.class_eval do
-            include Mealy
-
-            initial_state :start
-            transition from: :start, to: :end, on: 1
-          end
-
-          expect do
-            fsm_instance.run_mealy([1]) {}
-          end.to change(fsm_instance, :state).to(:end)
-        end
-
         context 'with user block' do
           it 'fires user block' do
             Example.class_eval do
@@ -98,36 +71,23 @@ RSpec.describe Mealy do
 
     context 'when in normal state transitions' do
       context 'with ANY label' do
-        it 'changes the state' do
-          Example.class_eval do
-            include Mealy
+        context 'with user block' do
+          it 'fires user block' do
+              Example.class_eval do
+                include Mealy
 
-            initial_state :start
-            transition from: :start, to: :mid
-            transition from: :mid, to: :end
+                initial_state :start
+                transition from: :start, to: :mid
+                transition(from: :mid, to: :end) { @receiver.call! }
+              end
+
+              fsm_instance.run_mealy([1, 2]) {}
+              expect(fsm_instance.receiver).to have_received(:call!)
+            end
           end
-
-          expect do
-            fsm_instance.run_mealy([1, 2]) {}
-          end.to change(fsm_instance, :state).to(:end)
         end
-      end
 
       context 'with matching input' do
-        it 'changes the state' do
-          Example.class_eval do
-            include Mealy
-
-            initial_state :start
-            transition from: :start, to: :mid, on: 1
-            transition from: :mid, to: :end, on: 2
-          end
-
-          expect do
-            fsm_instance.run_mealy([1, 2]) {}
-          end.to change(fsm_instance, :state).to(:end)
-        end
-
         context 'with user block' do
           it 'fires user block' do
             Example.class_eval do
@@ -197,7 +157,7 @@ RSpec.describe Mealy do
     end
 
     context 'when input ends prematurely' do
-      it 'leaves the machine in intermediate state' do
+      it 'runs without error' do
         Example.class_eval do
           include Mealy
 
@@ -208,8 +168,7 @@ RSpec.describe Mealy do
 
         expect do
           fsm_instance.run_mealy([1]) {}
-        end.to change(fsm_instance, :state)
-          .to(:mid)
+        end.not_to raise_error
       end
     end
 

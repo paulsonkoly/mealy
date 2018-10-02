@@ -15,7 +15,7 @@ module Mealy
 
   # emit tokens from the DSL blocks
   def emit(token)
-    @emits << token
+    __emit(token)
   end
 
   # yields each emitted token in turn
@@ -29,45 +29,56 @@ module Mealy
     finish_tokenization { |token| yield(token) }
   end
 
-  private
+  -> {
+    # we don't want to leak @emits, @state out to the user code, therefore we
+    # made them block local variables in this lambda. In essence no instance
+    # variable should appear in this code, otherwise the user blocks might
+    # interfere with them
+    emits = []
+    state = nil
 
-  def begin_tokenization
-    @state, block = init
-    user_action block
-  end
+    private
 
-  def tokenize_token(char)
-    params = lookup_transition_for(char)
-    block = params[:block]
-    move_state(params[:to]) do |from, to|
-      user_action(block, char, from, to) do |token|
-        yield(token)
+    define_method(:__emit) { |token| emits << token }
+
+    define_method(:begin_tokenization) do
+      state, block = init
+      user_action block
+    end
+
+    def tokenize_token(char)
+      params = lookup_transition_for(char)
+      block = params[:block]
+      move_state(params[:to]) do |from, to|
+        user_action(block, char, from, to) do |token|
+          yield(token)
+        end
       end
     end
-  end
 
-  def finish_tokenization
-    user_action(finish) { |token| yield(token) }
-  end
-
-  def lookup_transition_for(char)
-    on_not_found = -> { raise UnexpectedTokenError.new(state, char) }
-    _, params = transitions[@state].find(on_not_found) do |key, _|
-      key.match?(char)
+    def finish_tokenization
+      user_action(finish) { |token| yield(token) }
     end
-    params
-  end
 
-  def move_state(to)
-    yield(@state, to)
-    @state = to
-  end
+    define_method(:lookup_transition_for) do |char|
+      on_not_found = -> { raise UnexpectedTokenError.new(state, char) }
+      _, params = transitions[state].find(on_not_found) do |key, _|
+        key.match?(char)
+      end
+      params
+    end
 
-  def user_action(block, *args)
-    @emits = []
-    return if block.nil?
+    define_method(:move_state) do |to, &block|
+      block.call(state, to)
+      state = to
+    end
 
-    instance_exec(*args, &block)
-    @emits.each { |emit| yield(emit) }
-  end
+    define_method(:user_action) do |block, *args|
+      emits = []
+      return if block.nil?
+
+      instance_exec(*args, &block)
+      emits.each { |emit| yield(emit) }
+    end
+  }.call
 end
