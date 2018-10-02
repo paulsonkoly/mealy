@@ -54,12 +54,4 @@ module Mealy
     klass.class_eval { @transitions = Hash.new { Hash.new({}) } }
     klass.extend(DSL)
   end
-
-  private
-
-  %i[init transitions finish].each do |sym|
-    define_method(sym) do
-      self.class.instance_variable_get(:"@#{sym}")
-    end
-  end
 end
