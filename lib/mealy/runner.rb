@@ -14,30 +14,31 @@ module Mealy
 
     # same as calling {Mealy#execute}
     def run(enum)
-      begin_tokenization
-      enum.each { |c| tokenize_token(c) { |token| yield(token) } }
-      finish_tokenization { |token| yield(token) }
+      start
+
+      enum.each { |c| run_for_token(c) }
+
+      finish
     end
 
     private
 
-    def begin_tokenization
-      @state, block = init
-      user_action block
+    def start
+      @state, block = start_data
+      user_action(block)
     end
 
-    def tokenize_token(char)
-      params = lookup_transition_for(char)
+    def run_for_token(token)
+      params = lookup_transition_for(token)
       block = params[:block]
-      move_state(params[:to]) do |from, to|
-        user_action(block, char, from, to) do |token|
-          yield(token)
-        end
-      end
+      from = @state
+      to = params[:to]
+      @state = to
+      user_action(block, token, from, to)
     end
 
-    def finish_tokenization
-      user_action(finish) { |token| yield(token) }
+    def finish
+      user_action(finish_data)
     end
 
     def lookup_transition_for(char)
@@ -48,18 +49,13 @@ module Mealy
       params
     end
 
-    def move_state(to)
-      yield(@state, to)
-      @state = to
-    end
-
     def user_action(user_action_block, *args)
       return if user_action_block.nil?
 
       @mealy.instance_exec(*args, &user_action_block)
     end
 
-    %i[init transitions finish].each do |sym|
+    %i[start_data transitions finish_data].each do |sym|
       define_method(sym) do
         @mealy.class.instance_variable_get(:"@#{sym}")
       end
@@ -76,12 +72,22 @@ module Mealy
       @emits << emit
     end
 
+    def run(enum)
+      start.each { |emit| yield(emit) }
+
+      enum.each do |c|
+        run_for_token(c).each { |emit| yield(emit) }
+      end
+
+      finish.each { |emit| yield(emit) }
+    end
+
     private
 
     def user_action(user_action_block, *args)
       @emits = []
       super
-      @emits.each { |emit| yield(emit) }
+      @emits
     end
   end
 end

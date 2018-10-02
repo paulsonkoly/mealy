@@ -11,7 +11,7 @@ module Mealy
     # @param block user code executed in the instance of the FSM instance on
     #              start up
     def initial_state(sym, &block)
-      @init = [sym, block]
+      @start_data = [sym, block]
     end
 
     # An FSM transition.
@@ -45,7 +45,7 @@ module Mealy
     # final FSM state
     # @param block fires on FSM shutdown
     def finish(&block)
-      @finish = block
+      @finish_data = block
     end
   end
 
