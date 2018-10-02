@@ -19,8 +19,29 @@ end
 RSpec.describe Mealy do
   let(:fsm_instance) { Example.new }
 
-  describe '.run_mealy' do
+  describe '.run' do
+    context 'without a block' do
+      it 'returns an Enumerator' do
+        Example.class_eval { include Mealy }
 
+        expect(fsm_instance.run([])).to be_an Enumerator
+      end
+    end
+  end
+
+  describe '.execute' do
+    it 'returns the result of the finish block' do
+      Example.class_eval do
+        include Mealy
+
+        finish { :something }
+      end
+
+      expect(fsm_instance.execute([])).to eql :something
+    end
+  end
+
+  describe 'running' do
     context 'with .initial_state user block' do
       it 'fires user block once' do
         Example.class_eval do
@@ -29,7 +50,7 @@ RSpec.describe Mealy do
           initial_state(:start) { @receiver.call! }
         end
 
-        fsm_instance.run_mealy([]) {}
+        fsm_instance.execute([])
 
         expect(fsm_instance.receiver).to have_received(:call!)
       end
@@ -46,7 +67,7 @@ RSpec.describe Mealy do
               transition(from: :start, to: :end, on: 1) { @receiver.call! }
             end
 
-            fsm_instance.run_mealy([1]) {}
+            fsm_instance.execute([1])
 
             expect(fsm_instance.receiver).to have_received(:call!)
           end
@@ -63,7 +84,7 @@ RSpec.describe Mealy do
           end
 
           expect do
-            fsm_instance.run_mealy([2]) {}
+            fsm_instance.execute([2])
           end.to raise_error(Mealy::UnexpectedTokenError)
         end
       end
@@ -73,19 +94,19 @@ RSpec.describe Mealy do
       context 'with ANY label' do
         context 'with user block' do
           it 'fires user block' do
-              Example.class_eval do
-                include Mealy
+            Example.class_eval do
+              include Mealy
 
-                initial_state :start
-                transition from: :start, to: :mid
-                transition(from: :mid, to: :end) { @receiver.call! }
-              end
-
-              fsm_instance.run_mealy([1, 2]) {}
-              expect(fsm_instance.receiver).to have_received(:call!)
+              initial_state :start
+              transition from: :start, to: :mid
+              transition(from: :mid, to: :end) { @receiver.call! }
             end
+
+            fsm_instance.execute([1, 2])
+            expect(fsm_instance.receiver).to have_received(:call!)
           end
         end
+      end
 
       context 'with matching input' do
         context 'with user block' do
@@ -98,7 +119,7 @@ RSpec.describe Mealy do
               transition(from: :mid, to: :end, on: 2) { @receiver.call! }
             end
 
-            fsm_instance.run_mealy([1, 2]) {}
+            fsm_instance.execute([1, 2])
 
             expect(fsm_instance.receiver).to have_received(:call!)
           end
@@ -110,7 +131,7 @@ RSpec.describe Mealy do
               initial_state(:start) { @something = :defined }
             end
 
-            fsm_instance.run_mealy([]) {}
+            fsm_instance.execute([])
             something = fsm_instance.instance_variable_get(:@something)
             expect(something).to be :defined
           end
@@ -130,11 +151,31 @@ RSpec.describe Mealy do
               attr_reader :token, :to, :from
             end
 
-            fsm_instance.run_mealy([1]) {}
+            fsm_instance.execute([1])
 
             expect(fsm_instance.token).to eql(1)
             expect(fsm_instance.from).to eql(:start)
             expect(fsm_instance.to).to eql(:end)
+          end
+
+          it 'emits from the user block' do
+            Example.class_eval do
+              include Mealy
+
+              initial_state(:start)
+
+              transition from: :start, to: :end, on: 1 do
+                emit(1)
+                emit(2)
+                emit(3)
+              end
+            end
+
+            ix = 1
+            fsm_instance.run([1]) do |emit|
+              expect(emit).to eql(ix)
+              ix += 1
+            end
           end
         end
       end
@@ -150,7 +191,7 @@ RSpec.describe Mealy do
           end
 
           expect do
-            fsm_instance.run_mealy([1, 1]) {}
+            fsm_instance.execute([1, 1])
           end.to raise_error(Mealy::UnexpectedTokenError)
         end
       end
@@ -167,7 +208,7 @@ RSpec.describe Mealy do
         end
 
         expect do
-          fsm_instance.run_mealy([1]) {}
+          fsm_instance.execute([1])
         end.not_to raise_error
       end
     end
@@ -181,7 +222,7 @@ RSpec.describe Mealy do
           read(state: :start, on: 1) { @receiver.call! }
         end
 
-        fsm_instance.run_mealy([1] * 10) {}
+        fsm_instance.execute([1] * 10)
 
         expect(fsm_instance.receiver).to have_received(:call!).exactly(10).times
       end
@@ -196,16 +237,10 @@ RSpec.describe Mealy do
             finish { @receiver.call! }
           end
 
-          fsm_instance.run_mealy([]) {}
+          fsm_instance.execute([])
 
           expect(fsm_instance.receiver).to have_received(:call!)
         end
-      end
-    end
-
-    context 'with no block given' do
-      it 'returns an Enumertor' do
-        expect(fsm_instance.run_mealy([])).to be_an(Enumerator)
       end
     end
   end

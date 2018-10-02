@@ -14,19 +14,26 @@ module Mealy
   end
 
   # emit tokens from the DSL blocks
+  # @param token the emitted token
   def emit(token)
     __emit(token)
   end
 
-  # yields each emitted token in turn
+  # Runs the Mealy machine on the given input. Outputs a stream of tokens by
+  # yielding each emitted token to the given block.
   # @param enum [Enumerable] the input for the FSM
-  # @return Enumerator if no block is given
-  def run_mealy(enum)
-    return to_enum(:run_mealy, enum) unless block_given?
+  # @return [Enumerator] if no block is given
+  def run(enum, &block)
+    return to_enum(:run, enum) unless block_given?
 
-    begin_tokenization
-    enum.each { |c| tokenize_token(c) { |token| yield(token) } }
-    finish_tokenization { |token| yield(token) }
+    __run(enum, :with_emits, &block)
+  end
+
+  # Runs the Mealy machine on the given input.
+  # @param enum [Enumerable] the input for the FSM
+  # @return the return value of the {Mealy::DSL#finish} block.
+  def execute(enum)
+    __run(enum, :without_emits)
   end
 
   -> {
@@ -36,9 +43,19 @@ module Mealy
     # interfere with them
     emits = []
     state = nil
+    mode = :without_emits
 
     private
 
+    def __run(enum, mode)
+      set_mode(mode)
+
+      begin_tokenization
+      enum.each { |c| tokenize_token(c) { |token| yield(token) } }
+      finish_tokenization { |token| yield(token) }
+    end
+
+    define_method(:set_mode) { |_mode| mode = _mode }
     define_method(:__emit) { |token| emits << token }
 
     define_method(:begin_tokenization) do
@@ -73,12 +90,18 @@ module Mealy
       state = to
     end
 
-    define_method(:user_action) do |block, *args|
+    define_method(:user_action) do |user_action_block, *args, &block|
       emits = []
-      return if block.nil?
+      return if user_action_block.nil?
 
-      instance_exec(*args, &block)
-      emits.each { |emit| yield(emit) }
+      retval = instance_exec(*args, &user_action_block)
+
+      case mode
+      when :without_emits
+        retval
+      when :with_emits
+        emits.each { |emit| block.call(emit) }
+      end
     end
   }.call
 end

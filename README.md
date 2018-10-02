@@ -2,16 +2,18 @@ A Mealy finite state machine.
 
 [![Build Status](https://travis-ci.com/phaul/mealy.svg?branch=master)](https://travis-ci.com/phaul/mealy)
 
-Define transition rules for your class, and include {Mealy} to make it a functioning state machine. The output can be emitted from the user code, each emit is yielded to the block of {Mealy#run_mealy}.
+## Defining the machines
+
+Define transition rules for your class, and include {Mealy} to make it a functioning state machine.
+
+See {Mealy::DSL} for the class methods available for defining the machines.
 
 Matching rules are chosen in the order of appearance, first match wins. {Mealy::ANY} represents a wildcard, so naturally rules with this token come last otherwise more specific rules can't match. The default token argument is
 {Mealy::ANY} so it can be omitted.
 
-## Examples
-
 ### Simple example
 
-read ones until a zero. Then emit how many ones we read.
+read ones until a zero. Then return how many ones we read.
 
 ```ruby
 class Counter
@@ -27,14 +29,16 @@ class Counter
   # rest of the input
   read(state: :end)
 
-  finish { emit(@counter) }
+  finish { @counter }
 end
 
 counter = Counter.new
-counter.run_mealy([1,1,1,1,0,1,0,0]).first # => 4
+counter.execute([1, 1, 1, 1, 0, 1, 0, 0]) # => 4
 ```
 
 ### Float parser
+
+![float FSM](http://github.com/phaul/mealy/raw/master/doc/float.svg?sanitize=true)
 
 ```ruby
 class FloatParser
@@ -56,16 +60,53 @@ class FloatParser
 
   read(state: :error)
 
-  attr_reader :error
+  finish { @error }
 end
 
 p = FloatParser.new
-p.run_mealy('1'.chars) {}
-p.error # => nil
-p.run_mealy('1.0'.chars) {}
-p.error # => nil
-p.run_mealy('.0'.chars) {}
-p.error # => "unexpected char . @ :first"
-p.run_mealy('1.2.0'.chars) {}
-p.error # => "unexpected char . @ :after_dot"
+p.execute('1'.chars) # => nil
+p.execute('1.0'.chars) # => nil
+p.execute('.0'.chars) # => "unexpected char . @ :first"
+p.execute('1.2.0'.chars) # => "unexpected char . @ :after_dot"
+```
+
+## Running the machine
+
+There are two interfaces to run the machine and get results from it. {Mealy#run} and {Mealy#execute}.
+
+{Mealy#run} can be used if one wants to {Mealy#emit} a stream of outputs as the machine is running. This can be useful for instance if we want to emit tokens from a lexer (our Mealy machine) to a parser.
+
+{Mealy#execute} has a simpler interface. It is useful when we are just interested in a single value at the final state, let's say if something is parseable or not.
+
+### Emitting tokens
+
+This example shows how one can emit a stream of tokens from a Mealy machine.
+
+```ruby
+require 'mealy'
+
+class TagParser
+  include Mealy
+
+  initial_state(:normal) { @text = '' }
+
+  transition(from: :normal, to: :tag, on: ?<) do
+    emit({text: @text}) unless @text.empty?
+    @text = ''
+  end
+
+  transition(from: :tag, to: :close_tag, on: ?/)
+
+  transition(from: [ :tag, :close_tag ], to: :normal, on: ?>) do |_, from|
+    emit({from => @text}) unless @text.empty?
+    @text = ''
+  end
+
+  read(state: [:normal, :tag, :close_tag]) { |c| @text << c }
+
+  finish { emit @text unless @text.empty? }
+end
+
+p = TagParser.new
+p.run('<h1>some title</h1>'.chars).entries # => [{:tag=>"h1"}, {:text=>"some title"}, {:close_tag=>"h1"}]
 ```
