@@ -72,6 +72,7 @@ module Mealy
       @emits << emit
     end
 
+    # same as calling {Mealy#run}
     def run(enum)
       start.each { |emit| yield(emit) }
 
