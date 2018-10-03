@@ -171,11 +171,9 @@ RSpec.describe Mealy do
               end
             end
 
-            ix = 1
-            fsm_instance.run([1]) do |emit|
-              expect(emit).to eql(ix)
-              ix += 1
-            end
+            expect do |b|
+              fsm_instance.run([1], &b)
+            end.to yield_successive_args(1, 2, 3)
           end
         end
       end
