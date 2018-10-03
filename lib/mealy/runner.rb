@@ -64,7 +64,7 @@ module Mealy
 
   # This class should not be used directly.
   #
-  # Extends {Runner} with emitting capabilities.
+  # Extends {Executer} with emitting capabilities.
   class Runner < Executer
     # add an emit to the runner
     # @param emit token
