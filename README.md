@@ -37,8 +37,7 @@ counter.execute([1, 1, 1, 1, 0, 1, 0, 0]) # => 4
 ```
 
 ### Float parser
-
-![float FSM](http://github.com/phaul/mealy/raw/master/doc/float.svg?sanitize=true)
+![float FSM](https://raw.githubusercontent.com/phaul/mealy/master/doc/float.svg?sanitize=true)
 
 ```ruby
 class FloatParser
