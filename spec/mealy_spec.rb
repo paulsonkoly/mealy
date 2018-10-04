@@ -6,24 +6,25 @@ require 'simplecov'
 SimpleCov.start
 require 'mealy'
 
-class Example
-  include RSpec::Mocks::ExampleMethods
+RSpec.describe Mealy do
+  before(:all) { Example = Class.new }
+  before { Example.include(described_class) }
 
-  def initialize
-    @receiver = spy('receiver')
+  after do
+    # if there was a sensible way to "uninclude Mealy" we would do it here.
+    # Instead we reset the instance variables that the previous rspec example
+    # might have set. This couples the test tightly with the implementation,
+    # which is not great but better than not doing anything between tests..
+    Example.instance_variable_set(:@start_data, nil)
+    Example.instance_variable_set(:@finish_data, nil)
+    Example.instance_variable_set(:@transitions, nil)
   end
 
-  attr_reader :receiver
-end
-
-RSpec.describe Mealy do
   let(:fsm_instance) { Example.new }
 
   describe '.run' do
     context 'without a block' do
       it 'returns an Enumerator' do
-        Example.class_eval { include Mealy }
-
         expect(fsm_instance.run([])).to be_an Enumerator
       end
     end
@@ -31,28 +32,20 @@ RSpec.describe Mealy do
 
   describe '.execute' do
     it 'returns the result of the finish block' do
-      Example.class_eval do
-        include Mealy
+      Example.finish { :something }
 
-        finish { :something }
-      end
-
-      expect(fsm_instance.execute([])).to eql :something
+      expect(fsm_instance.execute([])).to be :something
     end
   end
 
   describe 'running' do
     context 'with .initial_state user block' do
       it 'fires user block once' do
-        Example.class_eval do
-          include Mealy
+        expect do |b|
+          Example.initial_state(:start, &b)
 
-          initial_state(:start) { @receiver.call! }
-        end
-
-        fsm_instance.execute([])
-
-        expect(fsm_instance.receiver).to have_received(:call!)
+          fsm_instance.execute([])
+        end.to yield_control
       end
     end
 
@@ -60,16 +53,14 @@ RSpec.describe Mealy do
       context 'with matching input' do
         context 'with user block' do
           it 'fires user block' do
-            Example.class_eval do
-              include Mealy
+            expect do |b|
+              Example.class_eval do
+                initial_state(:start)
+                transition(from: :start, to: :end, on: 1, &b)
+              end
 
-              initial_state(:start)
-              transition(from: :start, to: :end, on: 1) { @receiver.call! }
-            end
-
-            fsm_instance.execute([1])
-
-            expect(fsm_instance.receiver).to have_received(:call!)
+              fsm_instance.execute([1])
+            end.to yield_control
           end
         end
       end
@@ -77,8 +68,6 @@ RSpec.describe Mealy do
       context 'with non matching input' do
         it 'raises Mealy::UnexpectedTokenError' do
           Example.class_eval do
-            include Mealy
-
             initial_state :start
             transition from: :start, to: :end, on: 1
           end
@@ -94,16 +83,15 @@ RSpec.describe Mealy do
       context 'with ANY label' do
         context 'with user block' do
           it 'fires user block' do
-            Example.class_eval do
-              include Mealy
+            expect do |b|
+              Example.class_eval do
+                initial_state :start
+                transition from: :start, to: :mid
+                transition(from: :mid, to: :end, &b)
+              end
 
-              initial_state :start
-              transition from: :start, to: :mid
-              transition(from: :mid, to: :end) { @receiver.call! }
-            end
-
-            fsm_instance.execute([1, 2])
-            expect(fsm_instance.receiver).to have_received(:call!)
+              fsm_instance.execute([1, 2])
+            end.to yield_control
           end
         end
       end
@@ -111,25 +99,19 @@ RSpec.describe Mealy do
       context 'with matching input' do
         context 'with user block' do
           it 'fires user block' do
-            Example.class_eval do
-              include Mealy
+            expect do |b|
+              Example.class_eval do
+                initial_state(:start)
+                transition from: :start, to: :mid, on: 1
+                transition(from: :mid, to: :end, on: 2, &b)
+              end
 
-              initial_state(:start)
-              transition from: :start, to: :mid, on: 1
-              transition(from: :mid, to: :end, on: 2) { @receiver.call! }
-            end
-
-            fsm_instance.execute([1, 2])
-
-            expect(fsm_instance.receiver).to have_received(:call!)
+              fsm_instance.execute([1, 2])
+            end.to yield_control
           end
 
           it 'runs user blocks in instance context' do
-            Example.class_eval do
-              include Mealy
-
-              initial_state(:start) { @something = :defined }
-            end
+            Example.initial_state(:start) { @something = :defined }
 
             fsm_instance.execute([])
             something = fsm_instance.instance_variable_get(:@something)
@@ -138,8 +120,6 @@ RSpec.describe Mealy do
 
           it 'passes the token, the to and from states to user block' do
             Example.class_eval do
-              include Mealy
-
               initial_state(:start)
 
               transition from: :start, to: :end, on: 1 do |token, from, to|
@@ -153,15 +133,13 @@ RSpec.describe Mealy do
 
             fsm_instance.execute([1])
 
-            expect(fsm_instance.token).to eql(1)
-            expect(fsm_instance.from).to eql(:start)
-            expect(fsm_instance.to).to eql(:end)
+            expect(fsm_instance.token).to be(1)
+            expect(fsm_instance.from).to be(:start)
+            expect(fsm_instance.to).to be(:end)
           end
 
           it 'emits from the user block' do
             Example.class_eval do
-              include Mealy
-
               initial_state(:start)
 
               transition from: :start, to: :end, on: 1 do
@@ -181,8 +159,6 @@ RSpec.describe Mealy do
       context 'with non matching input' do
         it 'raises Mealy::UnexpectedTokenError' do
           Example.class_eval do
-            include Mealy
-
             initial_state :start
             transition from: :start, to: :mid, on: 1
             transition from: :mid, to: :end, on: 2
@@ -198,8 +174,6 @@ RSpec.describe Mealy do
     context 'when input ends prematurely' do
       it 'runs without error' do
         Example.class_eval do
-          include Mealy
-
           initial_state :start
           transition from: :start, to: :mid, on: 1
           transition from: :mid, to: :end, on: 2
@@ -213,31 +187,25 @@ RSpec.describe Mealy do
 
     context 'when in a state loop' do
       it 'fires the user action on each loop' do
-        Example.class_eval do
-          include Mealy
+        expect do |b|
+          Example.class_eval do
+            initial_state :start
+            read(state: :start, on: 1, &b)
+          end
 
-          initial_state :start
-          read(state: :start, on: 1) { @receiver.call! }
-        end
-
-        fsm_instance.execute([1] * 10)
-
-        expect(fsm_instance.receiver).to have_received(:call!).exactly(10).times
+          fsm_instance.execute([1] * 10)
+        end.to yield_control.exactly(10).times
       end
     end
 
     context 'when at the end' do
-      context 'if finish is set with user block' do
+      context 'when finish is set with user block' do
         it 'calls the user block' do
-          Example.class_eval do
-            include Mealy
+          expect do |b|
+            Example.finish(&b)
 
-            finish { @receiver.call! }
-          end
-
-          fsm_instance.execute([])
-
-          expect(fsm_instance.receiver).to have_received(:call!)
+            fsm_instance.execute([])
+          end.to yield_control
         end
       end
     end
