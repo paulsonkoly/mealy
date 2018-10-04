@@ -36,6 +36,14 @@ RSpec.describe Mealy do
 
       expect(fsm_instance.execute([])).to be :something
     end
+
+    context 'when there is emit in user block' do
+      it 'doesn\'t raise error' do
+        Example.initial_state(:start) { emit(:blah) }
+
+        expect { fsm_instance.execute([]) }.not_to raise_error
+      end
+    end
   end
 
   describe 'running' do
