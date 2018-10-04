@@ -3,7 +3,7 @@
 module Mealy
   # This class should not be used directly.
   #
-  # An object on which {#run} behaves like #{Mealy#execute}. The internal state
+  # An object on which {#run} behaves like Mealy{Mealy#execute}. The internal state
   # is tracked by this instance, the user state is in {Mealy}.
   class Executer
     # @param mealy [Mealy] mealy instance
