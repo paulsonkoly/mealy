@@ -66,29 +66,17 @@ module Mealy
   #
   # Extends {Executer} with emitting capabilities.
   class Runner < Executer
-    # add an emit to the runner
-    # @param emit token
-    def add_emit(emit)
-      @emits << emit
+    # emit tokens from the DSL blocks
+    # @param token the emitted token
+    def emit(emit)
+      @emit_block.call(emit)
     end
 
     # same as calling {Mealy#run}
-    def run(enum)
-      start.each { |emit| yield(emit) }
+    def run(enum, &emit_block)
+      @emit_block = emit_block
 
-      enum.each do |c|
-        run_for_token(c).each { |emit| yield(emit) }
-      end
-
-      finish.each { |emit| yield(emit) }
-    end
-
-    private
-
-    def user_action(user_action_block, *args)
-      @emits = []
       super
-      @emits
     end
   end
 end

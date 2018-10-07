@@ -18,7 +18,7 @@ module Mealy
   # @param token the emitted token
   def emit(token)
     return unless @emit_runner
-    @emit_runner.add_emit(token)
+    @emit_runner.emit(token)
   end
 
   # Runs the Mealy machine on the given input. Outputs a stream of tokens by
