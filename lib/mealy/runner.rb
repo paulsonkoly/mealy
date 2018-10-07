@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Mealy
-  # This class should not be used directly.
+  # @api private
   #
   # An object on which {#run} behaves like Mealy{Mealy#execute}. The internal state
   # is tracked by this instance, the user state is in {Mealy}.
@@ -62,7 +62,7 @@ module Mealy
     end
   end
 
-  # This class should not be used directly.
+  # @api private
   #
   # Extends {Executer} with emitting capabilities.
   class Runner < Executer
