@@ -67,7 +67,7 @@ module Mealy
   # Extends {Executer} with emitting capabilities.
   class Runner < Executer
     # emit tokens from the DSL blocks
-    # @param token the emitted token
+    # @param emit the emitted token
     def emit(emit)
       @emit_block.call(emit)
     end
