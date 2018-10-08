@@ -21,8 +21,10 @@ module Mealy
     # @param on [Label] only allows this rule to trigger if the read
     #           token matches ({HelperMethods.Label} is automatically called
     #           on this)
-    # @param block user code executed when the rule fires. The read input,
-    #              and the from and to states are passed to the block
+    # @param block user code executed when the rule fires
+    # @yieldparam input The read input, that matches the rules {Label}
+    # @yieldparam from The state we are transitioning away from
+    # @yieldparam to  The state we are transitioning to
     def transition(from:, to:, on: ANY, &block)
       hash = { HelperMethods.Label(on) => { to: to, block: block } }
       [* from].each do |origin|

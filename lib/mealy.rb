@@ -25,6 +25,7 @@ module Mealy
   # yielding each emitted token to the given block.
   # @param enum [Enumerable] the input for the FSM
   # @return [Enumerator] if no block is given
+  # @yieldparam emit The user token emitted by {#emit}.
   def run(enum, &block)
     return to_enum(:run, enum) unless block_given?
 
