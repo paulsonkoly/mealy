@@ -109,3 +109,7 @@ end
 p = TagParser.new
 p.run('<h1>some title</h1>'.chars).entries # => [{:tag=>"h1"}, {:text=>"some title"}, {:close_tag=>"h1"}]
 ```
+
+## API documentation
+
+  - [Yard docs](https://www.rubydoc.info/github/phaul/mealy/master/Mealy)
