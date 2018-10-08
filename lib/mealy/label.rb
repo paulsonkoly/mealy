@@ -21,9 +21,10 @@ module Mealy
   class AnyLabel < Label
     include Singleton
 
-    # made private as this is Singleton
     def initialize
     end
+
+    private :initialize
 
     # ignores any input and matches.
     def match?(*_)

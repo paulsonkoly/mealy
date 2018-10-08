@@ -51,6 +51,7 @@ module Mealy
     end
   end
 
+  # @private
   # Module.included hook. Resets the state transitions for a class
   def self.included(klass)
     klass.class_eval { @transitions = Hash.new { Hash.new({}) } }
