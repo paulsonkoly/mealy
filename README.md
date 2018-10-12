@@ -1,6 +1,6 @@
 A Mealy finite state machine.
 
-[![Build Status](https://travis-ci.com/phaul/mealy.svg?branch=master)](https://travis-ci.com/phaul/mealy)
+[![Build Status](https://travis-ci.org/phaul/mealy.svg?branch=master)](https://travis-ci.org/phaul/mealy)
 
 ## Defining the machines
 
