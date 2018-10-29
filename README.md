@@ -111,6 +111,47 @@ p = TagParser.new
 p.run('<h1>some title</h1>'.chars).entries # => [{:tag=>"h1"}, {:text=>"some title"}, {:close_tag=>"h1"}]
 ```
 
+## CSV parser
+
+This example is motivated by the [ruby quizz challange](https://www.reddit.com/r/ruby/comments/9sbbt3/ruby_quiz_is_back_a_fortnightly_programming/)
+
+
+![CSV FSM](https://raw.githubusercontent.com/phaul/mealy/master/doc/csv.svg?sanitize=true)
+
+```ruby
+class CSV
+  include Mealy
+
+  initial_state(:start) { @line = []; @text = '' }
+
+  read(state: :start, on: "\n")
+
+  transition(from: :start, to: :comment, on: '#')
+  transition(from: :comment, to: :start, on: "\n")
+  read(state: :comment)
+
+
+  transition from: [:normal, :start], to: :quote, on: '"'
+  transition from: :quote, to: :normal, on: '"'
+
+  transition(from: :start, to: :normal, on: ',') { @line << '' }
+  transition(from: :start, to: :normal, on: ' ')
+  transition(from: :start, to: :normal) { |c| @text << c }
+  transition(from: :normal, to: :start, on: "\n") do
+    emit @line << @text; @line = []; @text = ''
+  end
+
+  read state: :normal, on: ' '
+  read(state: :normal, on: ',') {  @line << @text; @text = '' }
+
+  read(state: [ :normal, :quote ]) { |c| @text << c }
+
+  finish { emit @line unless @line.empty? }
+end
+
+```
+
+
 ## API documentation
 
   - [Yard docs](https://www.rubydoc.info/github/phaul/mealy/master/Mealy)
