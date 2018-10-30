@@ -7,6 +7,7 @@ module Mealy
   module HelperMethods
     # Converts types to Labels. {Mealy::DSL#transition} calls this to convert
     # anything to a {Label}.
+    # @return [Label]
     def self.Label(convertee)
       if convertee.kind_of?(Label) then convertee
       else Label.new(convertee)
