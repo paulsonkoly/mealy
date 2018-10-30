@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name        = 'mealy'
-  s.version     = '0.0.0'
+  s.version     = '0.1.0'
   s.date        = '2018-09-24'
   s.summary     = 'A ruby DSL to create mealy state machines.'
   s.description = <<ED
