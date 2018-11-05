@@ -2,6 +2,7 @@ A Mealy finite state machine.
 
 [![Build Status](https://travis-ci.org/phaul/mealy.svg?branch=master)](https://travis-ci.org/phaul/mealy)
 [![Codeclimate](https://api.codeclimate.com/v1/badges/c10c40f52090b0c1ac6b/maintainability)](https://codeclimate.com/github/phaul/mealy/maintainability)
+[![Gem Version](https://badge.fury.io/rb/mealy.svg)](https://badge.fury.io/rb/mealy)
 
 ## Defining the machines
 
