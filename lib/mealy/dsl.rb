@@ -8,8 +8,7 @@ module Mealy
   module DSL
     # Declares the initial state of the FSM.
     # @param sym [Symbol] the initial state
-    # @param block user code executed in the instance of the FSM instance on
-    #              start up
+    # @param block user code executed in the instance of the FSM on start up
     def initial_state(sym, &block)
       @start_data = [sym, block]
     end
