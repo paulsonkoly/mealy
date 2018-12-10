@@ -15,7 +15,7 @@ Matching rules are chosen in the order of appearance, first match wins. {Mealy::
 
 ### Simple example
 
-read ones until a zero. Then return how many ones we read.
+This example reads ones until a zero. Then return how many ones we read.
 
 ```ruby
 class Counter
@@ -114,7 +114,7 @@ p.run('<h1>some title</h1>'.chars).entries # => [{:tag=>"h1"}, {:text=>"some tit
 
 ## CSV parser
 
-This example is motivated by the [ruby quizz challange](https://www.reddit.com/r/ruby/comments/9sbbt3/ruby_quiz_is_back_a_fortnightly_programming/)
+This example is motivated by the [ruby quiz challenge](https://www.reddit.com/r/ruby/comments/9sbbt3/ruby_quiz_is_back_a_fortnightly_programming/)
 
 
 ![CSV FSM](https://raw.githubusercontent.com/phaul/mealy/master/doc/csv.svg?sanitize=true)
