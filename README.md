@@ -15,7 +15,7 @@ Matching rules are chosen in the order of appearance, first match wins. {Mealy::
 
 ### Simple example
 
-This example reads ones until a zero. Then return how many ones we read.
+This example reads ones until a zero, then returns how many ones we read.
 
 ```ruby
 class Counter
