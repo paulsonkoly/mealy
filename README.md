@@ -114,8 +114,7 @@ p.run('<h1>some title</h1>'.chars).entries # => [{:tag=>"h1"}, {:text=>"some tit
 
 ## CSV parser
 
-This example is motivated by the [ruby quiz challenge](https://www.reddit.com/r/ruby/comments/9sbbt3/ruby_quiz_is_back_a_fortnightly_programming/)
-
+This example is motivated by the [ruby quiz challenge](https://www.reddit.com/r/ruby/comments/9sbbt3/ruby_quiz_is_back_a_fortnightly_programming/). It correctly parses the [test case](https://github.com/apache/commons-csv/blob/master/src/test/resources/CSVFileParser/test.csv) file.
 
 ![CSV FSM](https://raw.githubusercontent.com/phaul/mealy/master/doc/csv.svg?sanitize=true)
 
